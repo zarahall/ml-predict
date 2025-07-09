@@ -1,0 +1,68 @@
+#
+# For licensing see accompanying LICENSE file.
+# Copyright (C) 2025 Apple Inc. All Rights Reserved.
+#
+
+###
+### Config file used to control experiments
+### Specific parameters are often changed/swept in scripts/sweep_params.py
+###
+### Current values are the default values used for all experiments. Specific parameters are overwritten in sweep_params.
+###
+parameters:
+  base_dir: null  # Base directory to save all models, data.
+
+  # Wandb configs
+  wandb_mode: online  # Wandb mode. One of ["online", "offline", "disabled"]
+  wandb_ent: null  # Wandb entity to log to.
+
+  # Logging config
+  logging_level: "info"
+
+  # high level configs
+  exp_name: ".prose.gpt-4o.full"
+  group_name: "plume.summarization.1352"
+  seed: 1352 # Random seed to use
+
+  # Inference parameters
+  gpt_temperature: 0.01  # Temperature of gpt generation
+  qwen_temperature: 0.7  # Temperature of qwen generation
+
+  # Main experimental parameters
+  validation_threshold: 0.5 # Average validation score threshold required to keep preference.
+  num_other_sequences: 5 # Number of sequences to validate preference on.
+  num_refinement_steps: 3  # Number of counterfactual candidates to try
+
+  candidate_type: "iterate"  # one of iterate, single, none. CORE CONTRIBUTION
+  do_validate_preferences: true  # If true, validate preferences. CORE CONTRIBUTION
+  # only one of do_breakdown_preferences_each_iteration or do_breakdown_preferences_after_refinement can be true
+  # default is to do_breakdown_preferences_after_refinement, if both are true
+  do_breakdown_preferences_each_iteration: false  # If true, breakdown preferences after each refinement step. CORE CONTRIBUTION
+  do_breakdown_preferences_after_refinement: true  # If true, breakdown preferences after all refinement steps. CORE CONTRIBUTION
+  include_preferences_in_validate: false  # If true, present other preferences when validating a preference.
+  use_icl: false
+
+  # Related to retrieval
+  bertscore_model: "microsoft/deberta-xlarge" # Model to use for bertscore metric
+  retrieval_underlying_model: "microsoft/deberta-xlarge" # Model to use for example retrieval encoding
+  retrieval_mode: "exact_match"  # One of "exact_match", "most_recent", "bertscore", "cosine_sim"
+  encoder_aggregation: "mean_pool"  # Token agg. method used by example retriever if retrieval mode == "cosine_sim"
+                                    # One of "cls", "mean_pool", or "max_pool"
+  retrieval_threshold: null  # If null, consider all examples. Only used if retrieval mode == "cosine_sim"
+                             # Otherwise, only consider examples whose context are above the threshold similarity.
+  user:
+    # language model to use for the user.
+    llm_name: "gpt-4o"
+  task:
+    name: "summarization"  # task to use. Possible values: "summarization", "email_writing"
+    framework: "plume"  # type of task. Possible values: "prelude", "plume"
+    datasets: null  # dataset to use. If null, use all
+    number_of_examples_per_preference_set: 5  # Number of examples per preference set
+    solve_directly: True
+  agent:
+    # language model to use for the agent. possible values: 'gpt-4<o>' or 'qwen-2_5-<7/72>b'
+    llm_name: "gpt-4o"  #  see https://platform.openai.com/docs/models/ for more options
+    # learning method to use.
+    # possible values: 'oracle-preference', 'prose', 'cipher1', 'cipherN', 'no-learning', 'bc', 'icl',
+    name: "prose"
+
