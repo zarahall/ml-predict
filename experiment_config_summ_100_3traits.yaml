@@ -1,61 +1,40 @@
 #
-# Fair comparison config for PROSE vs Steering - EMAIL 100 EXAMPLES
+# PROSE Summarization - 100 examples, 3 max traits
 #
-# For human annotation study
-#
-
 parameters:
   base_dir: null
-
-  # Wandb configs
   wandb_mode: disabled
   wandb_ent: null
-
-  # Logging config
   logging_level: "info"
-
-  # high level configs
-  exp_name: ".prose.constrained.human-eval-email-100"
-  group_name: "plume.email.human-eval"
+  exp_name: ".prose.constrained.human-eval-100-3traits"
+  group_name: "plume.summarization.human-eval"
   seed: 1352
-
-  # Inference parameters
   gpt_temperature: 0.01
   qwen_temperature: 0.7
-
-  # Main experimental parameters
   validation_threshold: 0.5
-  num_other_sequences: 0  # No cross-source retrieval
+  num_other_sequences: 0
   num_refinement_steps: 3
-
   candidate_type: "iterate"
   do_validate_preferences: true
   do_breakdown_preferences_each_iteration: false
   do_breakdown_preferences_after_refinement: true
   include_preferences_in_validate: false
   use_icl: false
-
-  # Related to retrieval
   bertscore_model: "microsoft/deberta-xlarge"
   retrieval_underlying_model: "microsoft/deberta-xlarge"
   retrieval_mode: "exact_match"
   encoder_aggregation: "mean_pool"
   retrieval_threshold: null
-
   user:
     llm_name: "qwen-2_5-7b"
-
   task:
-    name: "email_writing"
+    name: "summarization"
     framework: "plume"
-    datasets: ["slf5k", "ampere", "paper_tweet"]  # Exclude ccby
-    number_of_examples_per_preference_set: 34  # 34 per source × 3 sources ≈ 102 total
+    datasets: null
+    number_of_examples_per_preference_set: 20
     solve_directly: True
-
   agent:
     llm_name: "qwen-2_5-7b"
     name: "prose"
-
-  # Constrained vocabulary for fair comparison
   constrained_vocabulary: true
   max_traits: 3

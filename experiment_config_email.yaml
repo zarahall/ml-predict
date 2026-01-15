@@ -1,22 +1,25 @@
 #
-# Fair comparison config for PROSE vs Steering - EMAIL 100 EXAMPLES
+# Fair comparison config for PROSE vs Steering - EMAIL TASKS
 #
-# For human annotation study
+# Key changes from default:
+# 1. num_other_sequences: 0 (no cross-source retrieval)
+# 2. Constrained vocabulary in inference prompts
+# 3. task.name: email_writing
 #
 
 parameters:
-  base_dir: null
+  base_dir: null  # Base directory to save all models, data.
 
   # Wandb configs
-  wandb_mode: disabled
+  wandb_mode: disabled  # Disable wandb for local runs
   wandb_ent: null
 
   # Logging config
   logging_level: "info"
 
   # high level configs
-  exp_name: ".prose.constrained.human-eval-email-100"
-  group_name: "plume.email.human-eval"
+  exp_name: ".prose.constrained.fair-comparison-email"
+  group_name: "plume.email.fair-comparison"
   seed: 1352
 
   # Inference parameters
@@ -25,7 +28,7 @@ parameters:
 
   # Main experimental parameters
   validation_threshold: 0.5
-  num_other_sequences: 0  # No cross-source retrieval
+  num_other_sequences: 0  # CHANGED: No cross-source retrieval (fair comparison with steering)
   num_refinement_steps: 3
 
   candidate_type: "iterate"
@@ -46,16 +49,16 @@ parameters:
     llm_name: "qwen-2_5-7b"
 
   task:
-    name: "email_writing"
+    name: "email_writing"  # CHANGED: Email task instead of summarization
     framework: "plume"
-    datasets: ["slf5k", "ampere", "paper_tweet"]  # Exclude ccby
-    number_of_examples_per_preference_set: 34  # 34 per source × 3 sources ≈ 102 total
+    datasets: ["slf5k", "ampere", "paper_tweet"]  # Exclude ccby (elsevier dataset has download issues)
+    number_of_examples_per_preference_set: 5  # 5 turns per source
     solve_directly: True
 
   agent:
     llm_name: "qwen-2_5-7b"
     name: "prose"
 
-  # Constrained vocabulary for fair comparison
+  # NEW: Constrained vocabulary for fair comparison
   constrained_vocabulary: true
-  max_traits: 3
+  max_traits: 3  # Match steering's top-3 selection

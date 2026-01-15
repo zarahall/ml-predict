@@ -62,6 +62,17 @@ def run(config):
                 ]
     df = pd.DataFrame(columns=columns)
 
+    # Create DataFrame to store PROSE outputs for competitor methods
+    prose_output_columns = ["example_num", "task_source", "source_example_num",
+                            "task_prompt", "inferred_preferences", "user_demo",
+                            "agent_output", "true_preferences"]
+    prose_outputs_df = pd.DataFrame(columns=prose_output_columns)
+
+    # Create DataFrame to store data for each turn for steering vector comparison
+    turn_data_columns = ["example_num", "turn", "task_source", "source_example_num",
+                         "task_prompt", "user_preferences", "user_demo"]
+    turn_data_df = pd.DataFrame(columns=turn_data_columns)
+
     task = get_task(config.task.name, config)
     agent = get_inferring_agent(config.agent.name, config)
     agent.set_task(task)
@@ -79,6 +90,33 @@ def run(config):
         # Get user to complete task
         user_trajectory = user.solve_task_as_user(task_instance)
         task_instance.user_completion = user_trajectory.completed_task
+
+        # Store data before learning (for competitor methods)
+        prose_output_row = {
+            "example_num": example_idx,
+            "task_source": task_instance.source,
+            "source_example_num": example_idx % config.task.number_of_examples_per_preference_set,
+            "task_prompt": task_instance.context,
+            "inferred_preferences": pred_preferences.in_natural_language(mode="string") if hasattr(pred_preferences, 'in_natural_language') else str(pred_preferences),
+            "user_demo": user_trajectory.completed_task,
+            "agent_output": agent_trajectory.completed_task,
+            "true_preferences": true_preferences.in_natural_language(mode="string") if hasattr(true_preferences, 'in_natural_language') else str(true_preferences)
+        }
+        prose_outputs_df.loc[len(prose_outputs_df)] = prose_output_row
+
+        # Store turn data for steering vector comparison (each turn within a source)
+        turn_num = example_idx % config.task.number_of_examples_per_preference_set
+        turn_data_row = {
+            "example_num": example_idx,
+            "turn": turn_num,
+            "task_source": task_instance.source,
+            "source_example_num": example_idx % config.task.number_of_examples_per_preference_set,
+            "task_prompt": task_instance.context,
+            "user_preferences": true_preferences.in_natural_language(mode="string") if hasattr(true_preferences, 'in_natural_language') else str(true_preferences),
+            "user_demo": user_trajectory.completed_task
+        }
+        turn_data_df.loc[len(turn_data_df)] = turn_data_row
+
         # Have the agent learn from user's completion of task
         agent.learn(task_instance, agent_trajectory, user_trajectory)
         # Get metrics on how well the agent performed
@@ -124,6 +162,12 @@ def run(config):
         wandb.log(metric_averages)
 
     df.to_csv(f"{framework}-{task_name}-{agent_name}-{llm_name}-{seed}-inferring_results.csv")
+    # Save PROSE outputs for competitor methods
+    prose_outputs_df.to_csv(f"{framework}-{task_name}-{agent_name}-{llm_name}-{seed}-prose_outputs.csv", index=False, quoting=1)
+    logger.info(f"Saved PROSE outputs to {framework}-{task_name}-{agent_name}-{llm_name}-{seed}-prose_outputs.csv")
+    # Save turn-by-turn data for steering vector comparison
+    turn_data_df.to_csv(f"{framework}-{task_name}-{agent_name}-{llm_name}-{seed}-turn_data.csv", index=False, quoting=1)
+    logger.info(f"Saved turn data to {framework}-{task_name}-{agent_name}-{llm_name}-{seed}-turn_data.csv")
     if framework == "plume":
         qa_df = task.get_llm_judge_question_and_answer_df()
         qa_df.to_csv(f"{framework}-{task_name}-{agent_name}-{llm_name}-{seed}-llm_judge_qa.csv", quoting=1)

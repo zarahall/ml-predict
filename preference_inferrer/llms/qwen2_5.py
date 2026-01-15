@@ -44,13 +44,16 @@ class Qwen2_5(BaseLLM):
             if "72b" in model_name:
                 Qwen2_5.model = AutoModelForCausalLM.from_pretrained(Qwen2_5.hf_mapper[model_name],
                                                                      device_map="auto",
-                                                                     token=HF_TOKEN)
+                                                                     token=HF_TOKEN,
+                                                                     cache_dir="/local/nlp/zyh2000/hf_cache")
             else:
                 Qwen2_5.model = AutoModelForCausalLM.from_pretrained(Qwen2_5.hf_mapper[model_name],
-                                                                     device_map=config.device,
-                                                                     token=HF_TOKEN)
+                                                                     device_map="auto",
+                                                                     token=HF_TOKEN,
+                                                                     cache_dir="/local/nlp/zyh2000/hf_cache")
             Qwen2_5.tokenizer = AutoTokenizer.from_pretrained(Qwen2_5.hf_mapper[model_name],
-                                                              token=HF_TOKEN)
+                                                              token=HF_TOKEN,
+                                                              cache_dir="/local/nlp/zyh2000/hf_cache")
 
     def prompt_llm(self, user_prompt: str, temperature: t.Optional[float] = None) -> str:
         """

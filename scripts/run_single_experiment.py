@@ -10,6 +10,7 @@ Run an experiment
 import yaml
 
 from preference_inferrer.tasks import run_task
+import prose_vocabulary_constraint
 
 RUN_NOTES = "validate using costs"
 

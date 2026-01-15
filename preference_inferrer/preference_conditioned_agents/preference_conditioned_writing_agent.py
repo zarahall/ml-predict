@@ -185,6 +185,7 @@ class PreferenceConditionedWritingAgent(PreferenceConditionedAgent):
         return WritingPreferenceSet(preferences, self.config)
 
     def solve_task(self, task_instance: WritingTaskInstance,
+                   is_user: bool = False,
                    preferences: t.Optional[WritingPreferenceSet] = None,
                    in_context_examples: t.Optional[t.List[str]] = None,
     ) -> WritingTrajectory:
